@@ -1,0 +1,109 @@
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.5/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.5/addons/p5.dom.js"></script>
+    <script src="../lib/p5.speech.js"></script>
+    <script>
+        var myRec = new p5.SpeechRec('en-US', parseResult); // new P5.SpeechRec object
+        myRec.continuous = true; // do continuous recognition
+        myRec.interimResults = true; // allow partial recognition (faster, less accurate)
+
+        const lang = 'en-GB'
+        const voiceIndex = 1
+            /* for this sprint I tried to combine the Voice and Sound Libraries. I ran into a lot of issues when combining it, there were a lot of syntax errors that I couldn't figure out, which eventually lead to the reason being that I had to fix my permissions on google chrome to work with sound and audio. Another issue is that I had to choose words that wouldn't be confused with something else with chrome - like when I said "clay" it thought I was saying "play", so I had to change thoe word inputs.  */
+
+        function setup() {
+            // graphics stuff:
+            createCanvas(800, 600);
+            background(255, 255, 255);
+            fill(0, 0, 0, 255);
+
+
+            clay = createAudio('assets/assets_sounds_clay.mp3');
+            prism = createAudio('assets/assets_sounds_prism-2.mp3');
+            suspension = createAudio('assets/assets_sounds_suspension.mp3');
+
+            // instructions:
+            textSize(20);
+            textAlign(LEFT);
+            text("Say Hello!", 20, 20);
+            text("Say Music, Sound, Suspension", 20, 50);
+
+
+            //myRec.onResult = parseResult; // now in the constructor
+            myRec.start(); // start engine
+        }
+
+        function draw() {
+
+            //        
+        }
+
+
+
+        const speak = async text => {
+            if (!speechSynthesis) {
+                return
+            }
+            const message = new SpeechSynthesisUtterance(text)
+            message.voice = await chooseVoice()
+            speechSynthesis.speak(message)
+        }
+
+        const getVoices = () => {
+            return new Promise(resolve => {
+                let voices = speechSynthesis.getVoices()
+                if (voices.length) {
+                    resolve(voices)
+                    return
+                }
+                speechSynthesis.onvoiceschanged = () => {
+                    voices = speechSynthesis.getVoices()
+                    resolve(voices)
+                }
+            })
+        }
+
+        const chooseVoice = async() => {
+            const voices = (await getVoices()).filter(voice => voice.lang == lang)
+
+            return new Promise(resolve => {
+                resolve(voices[voiceIndex])
+            })
+        }
+
+
+        function parseResult() {
+            // recognition system will often append words into phrases.
+            // so hack here is to only use the last word:
+
+            //if word was said, play sound
+            var mostrecentword = myRec.resultString.split(' ').pop();
+            if (mostrecentword.indexOf("hello") !== -1) {
+                speak('hello! What can I do for you today?');
+            } else if (mostrecentword.indexOf("music") !== -1) {
+                clay.play();
+            } else if (mostrecentword.indexOf("sound") !== -1) {
+                prism.play();
+            } else if (mostrecentword.indexOf("suspension") !== -1) {
+                suspension.play();
+            } else {
+                clay.stop();
+                prism.stop();
+                suspension.stop();
+            }
+
+
+
+
+            console.log(mostrecentword);
+        }
+
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+<html>
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.5/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.5/addons/p5.dom.js"></script>
+    <script src="../lib/p5.speech.js"></script>
+    <script>
+        /*This was the first sprint that I did as an introduction to the idea of using the users voice to controll something on screen. It was really challenging to try and get a grasp of what the code did and how it worked, I realized when setting the size and colour that the user had to first declare what those properties were before trying to draw and I couldn't really find a way to fix it, so I tried to make the text instructions as clear as possible. */
+
+        var myRec = new p5.SpeechRec('en-US', parseResult); // new P5.SpeechRec object
+        myRec.continuous = true; // do continuous recognition
+        myRec.interimResults = true; // allow partial recognition (faster, less accurate)
+
+        var x, y;
+        var dx, dy;
+
+        var size;
+
+        var r, b, g;
+
+        function setup() {
+            // graphics stuff:
+            createCanvas(800, 600);
+            background(255, 255, 255);
+            fill(0, 0, 0, 255);
+            x = width / 2;
+            y = height / 2;
+            dx = 0;
+            dy = 0;
+
+            // instructions:
+            textSize(20);
+            textAlign(LEFT);
+            text("SELECT SIZE: SMALL, MEDIUM, LARGE", 20, 20);
+            text("SELECT COLOUR: red, blue, green", 20, 45);
+            text("then draw: up, down, left, right, clear, stop", 20, 70);
+
+            //myRec.onResult = parseResult; // now in the constructor
+            myRec.start(); // start engine
+        }
+
+        function draw() {
+
+            fill(r, g, b);
+            noStroke();
+            ellipse(x, y, size, size);
+            x += dx;
+            y += dy;
+
+            //reset position of the circle if it goes off screen
+            if (x < 0) x = width;
+            if (y < 0) y = height;
+            if (x > width) x = 0;
+            if (y > height) y = 0;
+        }
+
+        function parseResult() {
+            // recognition system will often append words into phrases.
+            // so hack here is to only use the last word:
+            var mostrecentword = myRec.resultString.split(' ').pop();
+            if (mostrecentword.indexOf("left") !== -1) {
+                dx = -1;
+                dy = 0;
+            } else if (mostrecentword.indexOf("right") !== -1) {
+                dx = 1;
+                dy = 0;
+            } else if (mostrecentword.indexOf("up") !== -1) {
+                dx = 0;
+                dy = -1;
+            } else if (mostrecentword.indexOf("down") !== -1) {
+                dx = 0;
+                dy = 1;
+            } else if (mostrecentword.indexOf("clear") !== -1) {
+                background(255);
+            } else if (mostrecentword.indexOf("small") !== -1) {
+                size = 5;
+            } else if (mostrecentword.indexOf("medium") !== -1) {
+                size = 14;
+            } else if (mostrecentword.indexOf("large") !== -1) {
+                size = 20;
+            } else if (mostrecentword.indexOf("red") !== -1) {
+                r = 255;
+                b = 0;
+                g = 0;
+            } else if (mostrecentword.indexOf("blue") !== -1) {
+                r = 0;
+                b = 255;
+                g = 0;
+            } else if (mostrecentword.indexOf("green") !== -1) {
+                r = 0;
+                b = 0;
+                g = 255;
+
+                //stop motion (sometimes you have to say it twice)
+            } else if (mostrecentword.indexOf("stop") !== -1) {
+                dx = 0;
+                dy = 0;
+            }
+
+            console.log(mostrecentword);
+        }
+
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
